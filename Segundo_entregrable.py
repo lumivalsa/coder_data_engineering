@@ -15,11 +15,11 @@ try:
     print("Conexión exitosa a Redshift!")
 
     # Lista de ciudades europeas
-    cities = ['Madrid', 'Paris', 'Berlin', 'Rome', 'London']  # Agrega más ciudades si es necesario
+    cities = ['Madrid', 'Paris', 'Berlin', 'Rome', 'London', 'Budapest']  # Agrega más ciudades si es necesario
 
-    # Fechas desde enero hasta octubre de 2023
+    # Fechas desde enero hasta noviembre de 2023
     start_date = datetime(2023, 1, 1)
-    end_date = datetime(2023, 10, 31)
+    end_date = datetime(2023, 11, 30)
     date_range = [start_date + timedelta(days=x) for x in range((end_date - start_date).days + 1)]
 
     # Obtener datos de OpenWeatherMap para cada ciudad y fecha
@@ -30,13 +30,23 @@ try:
             res = requests.get(url)
             data = res.json()
 
-            # Insertar datos en Redshift
+            # Verificar si los datos ya existen en Redshift
             cursor.execute(
-                "INSERT INTO weather_data (city, temperature, humidity, date) VALUES (%s, %s, %s, %s)",
-                (city, data['main']['temp'], data['main']['humidity'], date.date())
+                "SELECT COUNT(*) FROM weather_data WHERE city = %s AND date = %s",
+                (city, date.date())
             )
-            conn.commit()
-            print(f"Dato de {city} para {date.date()} insertado en Redshift!")
+            existing_data = cursor.fetchone()[0]
+
+            # Insertar datos solo si no existen ya en Redshift
+            if existing_data == 0:
+                cursor.execute(
+                    "INSERT INTO weather_data (city, temperature, humidity, date) VALUES (%s, %s, %s, %s)",
+                    (city, data['main']['temp'], data['main']['humidity'], date.date())
+                )
+                conn.commit()
+                print(f"Dato de {city} para {date.date()} insertado en Redshift!")
+            else:
+                print(f"Dato de {city} para {date.date()} ya existe en Redshift. No se insertó.")
 
     print("Datos insertados en Redshift!")
 
