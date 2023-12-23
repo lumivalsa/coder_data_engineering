@@ -15,7 +15,7 @@ try:
     print("Conexión exitosa a Redshift!")
 
     # Lista de ciudades europeas
-    cities = ['Madrid', 'Paris', 'Berlin', 'Rome', 'London', 'Budapest']  # Agrega más ciudades si es necesario
+    cities = ['Madrid', 'Paris', 'Berlin', 'Rome', 'London', 'Budapest']  
 
     # Fechas desde enero hasta noviembre de 2023
     start_date = datetime(2023, 1, 1)
